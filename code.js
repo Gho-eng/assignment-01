@@ -1,13 +1,13 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const results = document.getElementById("results");
-  const userModal = new bootstrap.Modal(document.getElementById("userModal"));
-  const generateBtn = document.getElementById("generate");
-  const countInput = document.getElementById("count");
-  const nameModeSelect = document.getElementById("nameMode");
-  let selectedUserIndex = null;
-  let users = [];
+document.addEventListener("DOMContentLoaded", () => { // Ensures all HTML elements exist before JS tries to find them.
+  const results = document.getElementById("results"); // where users will be inserted.
+  const userModal = new bootstrap.Modal(document.getElementById("userModal")); // Bootstrap modal instance.
+  const generateBtn = document.getElementById("generate");            //  |
+  const countInput = document.getElementById("count");                // user controls
+  const nameModeSelect = document.getElementById("nameMode");         //  |
+  let selectedUserIndex = null; // keeps track of which row was double-clicked
+  let users = []; // stores all generated users.
 
-  function renderUsers(list) {
+  function renderUsers(list) { // clears old rows | Creates a new row for each user | Depending on dropdown, shows first name or last name.
     results.innerHTML = "";
     users = list;
 
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     users.forEach((u, i) => {
       const row = document.createElement("tr");
-      const displayName = mode === "first" ? u.name.first : u.name.last;
+      const displayName = mode === "first" ? u.name.first : u.name.last; // "?" is a shortcut for if/else
 
       row.innerHTML = `
         <td>${displayName}</td>
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${u.location.country}</td>
       `;
 
-      row.addEventListener("dblclick", () => {
+      row.addEventListener("dblclick", () => { // opens detailed view with a double click
         selectedUserIndex = i;
         showUserDetails(u);
         userModal.show();
@@ -35,11 +35,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showUserDetails(u) {
-  const initials = `${u.name.first[0] || ""}${u.name.last[0] || ""}`.toUpperCase();
+  const initials = `${u.name.first[0] || ""}${u.name.last[0] || ""}`.toUpperCase(); // shows initials on the profile
   document.getElementById("userAvatar").textContent = initials;
   document.getElementById("userName").textContent = `${u.name.title} ${u.name.first} ${u.name.last}`;
   document.getElementById("userAddress").textContent =
-    `${u.location.street.number} ${u.location.street.name}, ${u.location.city}, ${u.location.state}, ${u.location.country}, ${u.location.postcode}`;
+    `${u.location.street.number} ${u.location.street.name}, ${u.location.city}, 
+    ${u.location.state}, ${u.location.country}, ${u.location.postcode}`;
   document.getElementById("userEmail").textContent = u.email;
   document.getElementById("userPhone").textContent = u.phone;
 
@@ -50,30 +51,30 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
 
-  generateBtn.addEventListener("click", () => {
-    const count = Number(countInput.value);
-    if (!Number.isInteger(count) || count < 0 || count > 1000) return;
+  generateBtn.addEventListener("click", () => { 
+    const count = Number(countInput.value); // reads input
+    if (!Number.isInteger(count) || count < 0 || count > 1000) return; // checks if above 0 & below 1000
 
-    if (count === 0) {
+    if (count === 0) { // clears table if 0
       users = [];
       results.innerHTML = "";
       return;
     }
 
-    fetch(`https://randomuser.me/api/?results=${count}&inc=name,gender,email,location,phone,dob&noinfo=true`)
+    fetch(`https://randomuser.me/api/?results=${count}&inc=name,gender,email,location,phone,dob&noinfo=true`) // gets details from api
       .then(res => res.json())
-      .then(data => renderUsers(data.results))
+      .then(data => renderUsers(data.results)) // passes to renderUsers
       .catch(err => console.error(err));
   });
 
-  nameModeSelect.addEventListener("change", () => {
+  nameModeSelect.addEventListener("change", () => { // re-renders table when dropdown is changed
     if (users.length > 0) renderUsers(users);
   });
 
   const editBtn = document.getElementById("editUser");
   const saveBtn = document.getElementById("saveUser");
 
-  editBtn.addEventListener("click", () => {
+  editBtn.addEventListener("click", () => { // Reads current values
     const fields = {
       userName: document.getElementById("userName").textContent,
       userAddress: document.getElementById("userAddress").textContent,
@@ -103,35 +104,37 @@ document.addEventListener("DOMContentLoaded", () => {
     saveBtn.classList.remove("d-none");
   });
 
-  saveBtn.addEventListener("click", () => {
+  saveBtn.addEventListener("click", () => { 
     if (selectedUserIndex === null) return;
 
     const updatedUser = users[selectedUserIndex];
 
-    updatedUser.name.first = document.getElementById("editName").value.split(" ")[1] || updatedUser.name.first;
+    updatedUser.name.first = document.getElementById("editName").value.split(" ")[1] || updatedUser.name.first; 
     updatedUser.name.last = document.getElementById("editName").value.split(" ")[2] || updatedUser.name.last;
+    //gets user's name, splits into array, if parts are missing falls back to previous inputted name 
+    //(this checks for the names [first[1], last[2]] seperate from the title[0])
     updatedUser.email = document.getElementById("editEmail").value;
     updatedUser.phone = document.getElementById("editPhone").value;
-    updatedUser.dob.date = document.getElementById("editDob").value; // free text now
+    updatedUser.dob.date = document.getElementById("editDob").value;
     updatedUser.gender = document.getElementById("editGender").value;
 
     updatedUser.location.full = document.getElementById("editAddress").value;
 
     showUserDetails(updatedUser);
 
-    const row = results.rows[selectedUserIndex];
-    const mode = nameModeSelect.value;
-    row.cells[0].textContent =
-      mode === "first" ? updatedUser.name.first : updatedUser.name.last;
-    row.cells[1].textContent = updatedUser.gender;
-    row.cells[2].textContent = updatedUser.email;
-    row.cells[3].textContent = updatedUser.location.country;
+    const row = results.rows[selectedUserIndex]; // syncs table with new inserted data
+    const mode = nameModeSelect.value;                                  //   |
+    row.cells[0].textContent =                                          //   |
+      mode === "first" ? updatedUser.name.first : updatedUser.name.last;//   |
+    row.cells[1].textContent = updatedUser.gender;                      //   |
+    row.cells[2].textContent = updatedUser.email;                       //   |
+    row.cells[3].textContent = updatedUser.location.country;            //   |
 
-    saveBtn.classList.add("d-none");
-    editBtn.classList.remove("d-none");
+    saveBtn.classList.add("d-none");            // witch the modal from “editing mode” back to “viewing mode”
+    editBtn.classList.remove("d-none");         // |
   });
 
-  document.getElementById("deleteUser").addEventListener("click", () => {
+  document.getElementById("deleteUser").addEventListener("click", () => { // Removes the user from the array and the table and closes the modal.
     if (selectedUserIndex !== null) {
       users.splice(selectedUserIndex, 1);
       results.deleteRow(selectedUserIndex);

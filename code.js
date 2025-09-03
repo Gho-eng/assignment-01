@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const userModal = new bootstrap.Modal(document.getElementById("userModal"));
   const generateBtn = document.getElementById("generate");
   const countInput = document.getElementById("count");
+  const nameMode = document.getElementById("nameMode"); // 👈 added
   let selectedUserIndex = null;
   let users = [];
 
@@ -12,8 +13,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     users.forEach((u, i) => {
       const row = document.createElement("tr");
+
+      // 👇 Show either first or last name depending on dropdown
+      const displayName =
+        nameMode.value === "first" ? u.name.first : u.name.last;
+
       row.innerHTML = `
-        <td>${u.name.first} ${u.name.last}</td>
+        <td>${displayName}</td>
         <td>${u.gender}</td>
         <td>${u.email}</td>
         <td>${u.location.country}</td>
@@ -54,6 +60,13 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(err => console.error(err));
   });
 
+  // 👇 re-render if dropdown is changed
+  nameMode.addEventListener("change", () => {
+    if (users.length > 0) {
+      renderUsers(users);
+    }
+  });
+
   const editBtn = document.getElementById("editUser");
   const saveBtn = document.getElementById("saveUser");
 
@@ -77,7 +90,11 @@ document.addEventListener("DOMContentLoaded", () => {
         users[selectedUserIndex].name.first = parts[1] || users[selectedUserIndex].name.first;
         users[selectedUserIndex].name.last = parts[2] || users[selectedUserIndex].name.last;
 
-        results.rows[selectedUserIndex].cells[0].textContent = newName;
+        // 👇 make sure table updates based on dropdown mode
+        results.rows[selectedUserIndex].cells[0].textContent =
+          nameMode.value === "first"
+            ? users[selectedUserIndex].name.first
+            : users[selectedUserIndex].name.last;
       }
     }
 

@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => { // Ensures all HTML elemen
       return;
     }
 
-    fetch(`https://randomuser.me/api/?results=${count}&inc=name,gender,email,location,phone,dob&noinfo=true`) // gets details from api
+    fetch(`http://localhost:3000/api?results=${count}`) // gets details from local host (server.js)
       .then(res => res.json())
       .then(data => renderUsers(data.results)) // passes to renderUsers
       .catch(err => console.error(err));
